@@ -8,24 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AddCorsHeaders
 {
-    /** Allowed origins (production + local dev). */
-    private const ALLOWED_ORIGINS = [
-        'https://can-react-laravel-blogapp.netlify.app',
-        'http://localhost:5173',
-    ];
-
     public function handle(Request $request, Closure $next): Response
     {
-        $requestOrigin = $request->header('Origin');
-        $origin = $requestOrigin && in_array($requestOrigin, self::ALLOWED_ORIGINS, true)
-            ? $requestOrigin
-            : self::ALLOWED_ORIGINS[0];
-
         $headers = [
-            'Access-Control-Allow-Origin' => $origin,
-            'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+            'Access-Control-Allow-Headers' => '*',
             'Access-Control-Max-Age' => '86400',
         ];
 

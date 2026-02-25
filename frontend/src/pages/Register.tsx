@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
-import EmailDivider from "@/components/auth/EmailDivider";
 import { useFormik } from "formik";
 import registerValidation from "@/validations/register.validation";
 import { axiosGuest } from "@/lib/axiosGuest";
@@ -104,10 +102,6 @@ export default function Register() {
             </p>
 
             <div className="mt-8">
-              <GoogleSignInButton />
-
-              <EmailDivider />
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
