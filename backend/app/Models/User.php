@@ -63,10 +63,22 @@ class User extends Authenticatable implements CanResetPassword
      */
     protected function image(): Attribute
     {
-        return Attribute::get(function () {
-            $path = filled($this->avatar) ? $this->avatar : 'images/profile.png';
-            return str_starts_with($path, 'http') ? $path : asset($path);
-        });
+        return Attribute::make(
+            get: function ($value) {
+
+                if (blank($value)) {
+                    return asset('images/profile.png');
+                }
+
+                if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                    return $value;
+                }
+
+                return asset($value); 
+                // Alternatif: storage ile kaydediyorsan:
+                // return \Storage::url($value);
+            }
+        );
     }
 
     public function sluggable(): array

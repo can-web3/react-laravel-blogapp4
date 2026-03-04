@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCategories } from "@/contexts/CategoriesContext";
+import { usePopularTags } from "@/hooks/usePopularTags";
 
 const footerLinks = [
   { name: "Home", href: "/", icon: Home },
@@ -18,25 +20,7 @@ const footerLinks = [
   { name: "Categories", href: "/categories", icon: FolderOpen },
 ];
 
-const footerCategories = [
-  "Technology",
-  "Design",
-  "Lifestyle",
-  "Travel",
-  "Food",
-  "AI",
-];
-
-const footerTags = [
-  "React",
-  "TypeScript",
-  "CSS",
-  "Figma",
-  "Remote",
-  "API",
-  "UI",
-  "Wellness",
-];
+const FOOTER_TAGS_LIMIT = 12;
 
 const socialLinks = [
   { href: "https://facebook.com", icon: Facebook, label: "Facebook" },
@@ -47,6 +31,8 @@ const socialLinks = [
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { categories, loading: categoriesLoading } = useCategories();
+  const { tags, loading: tagsLoading } = usePopularTags(FOOTER_TAGS_LIMIT);
 
   return (
     <footer className="w-full border-t bg-muted/30">
@@ -99,33 +85,48 @@ export default function Footer() {
           {/* Column 2: Categories */}
           <div>
             <h3 className="font-semibold text-foreground">Categories</h3>
-            <ul className="mt-4 space-y-2">
-              {footerCategories.map((name) => (
-                <li key={name}>
-                  <Link
-                    to={`/categories/${name.toLowerCase()}`}
-                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-                  >
-                    {name}
-                  </Link>
-                </li>
-              ))}
+            <ul className="mt-4 space-y-2" aria-busy={categoriesLoading}>
+              {categoriesLoading ? (
+                <li className="text-muted-foreground text-sm">Loading…</li>
+              ) : categories.length === 0 ? (
+                <li className="text-muted-foreground text-sm">No categories yet.</li>
+              ) : (
+                categories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link
+                      to={`/categories/${cat.slug}`}
+                      className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
 
           {/* Column 3: Tags */}
           <div>
             <h3 className="font-semibold text-foreground">Tags</h3>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {footerTags.map((tag) => (
-                <Link
-                  key={tag}
-                  to={`/tags/${tag.toLowerCase()}`}
-                  className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-primary/10 hover:text-primary"
-                >
-                  #{tag}
-                </Link>
-              ))}
+            <div
+              className="mt-4 flex flex-wrap gap-2"
+              aria-busy={tagsLoading}
+            >
+              {tagsLoading ? (
+                <span className="text-muted-foreground text-xs">Loading…</span>
+              ) : tags.length === 0 ? (
+                <span className="text-muted-foreground text-xs">No tags yet.</span>
+              ) : (
+                tags.map((tag) => (
+                  <Link
+                    key={tag.id}
+                    to={`/tags/${tag.slug}`}
+                    className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-primary/10 hover:text-primary"
+                  >
+                    #{tag.name}
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 
