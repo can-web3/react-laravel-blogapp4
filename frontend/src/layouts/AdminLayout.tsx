@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import ScrollToTop from "@/components/ScrollToTop";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 
 const navMain = [
   { to: "/admin", end: true, icon: LayoutDashboard, label: "Dashboard" },
@@ -116,6 +117,8 @@ function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export default function AdminLayout() {
+  useGoogleAnalytics();
+
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { isInitialized, isAuthenticated, user, logout } = useAuth();
