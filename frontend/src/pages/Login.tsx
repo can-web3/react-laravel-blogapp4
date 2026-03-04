@@ -77,7 +77,7 @@ export default function Login() {
         {/* Form panel: first on small screens, left on lg */}
         <div
           className="order-1 flex flex-col justify-center lg:order-1 px-(--auth-panel-padding-inline) py-(--auth-panel-padding-block) lg:px-(--auth-panel-padding-inline-lg) lg:py-(--auth-panel-padding-block-lg)"
-        >
+          >
           <div
             className="mx-auto w-full"
             style={{ maxWidth: "var(--auth-form-max-width)" }}
@@ -94,6 +94,30 @@ export default function Login() {
                 Register
               </Link>
             </p>
+
+            <div
+              className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-4 text-xs sm:text-sm"
+              role="status"
+              aria-label="Demo admin account for trying the app"
+            >
+              <p className="font-medium text-foreground">Demo admin account</p>
+              <div className="mt-3 space-y-1.5 text-muted-foreground">
+                <p>
+                  <span className="font-semibold text-foreground">Email:</span>{" "}
+                  <code className="font-mono text-[11px] sm:text-xs">
+                    admin@gmail.com
+                  </code>
+                </p>
+                <p>
+                  <span className="font-semibold text-foreground">
+                    Password:
+                  </span>{" "}
+                  <code className="font-mono text-[11px] sm:text-xs">
+                    admin1
+                  </code>
+                </p>
+              </div>
+            </div>
 
             <div className="mt-8">
               <form onSubmit={handleSubmit} className="space-y-4">
