@@ -6,7 +6,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://can-react-laravel-blogapp.netlify.app',
+        'https://react-laravel-blogapp.canprojects2.com.tr',
         'http://localhost:5173',
     ],
 
