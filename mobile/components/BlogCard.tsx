@@ -6,14 +6,16 @@ import type { BlogItem } from "@/lib/types";
 interface BlogCardProps {
   blog: BlogItem;
   onPress?: () => void;
+  onCategoryPress?: (slug: string) => void;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400";
 
-export function BlogCard({ blog, onPress }: BlogCardProps) {
+export function BlogCard({ blog, onPress, onCategoryPress }: BlogCardProps) {
   const imageUrl = blog.featured_image ? getImageUrl(blog.featured_image) : DEFAULT_IMAGE;
   const authorName = blog.user?.username || "Anonymous";
   const categoryName = blog.category?.name || "Uncategorized";
+  const categorySlug = blog.category?.slug;
 
   const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return "";
@@ -40,9 +42,19 @@ export function BlogCard({ blog, onPress }: BlogCardProps) {
         />
         {/* Category Badge */}
         {categoryName && (
-          <View className="absolute top-3 left-3 bg-primary-600 px-3 py-1.5 rounded-full">
-            <Text className="text-white text-xs font-semibold">{categoryName}</Text>
-          </View>
+          (onCategoryPress && categorySlug ? (
+            <TouchableOpacity
+              className="absolute top-3 left-3 bg-primary-600 px-3 py-1.5 rounded-full"
+              onPress={() => onCategoryPress(categorySlug)}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-xs font-semibold">{categoryName}</Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="absolute top-3 left-3 bg-primary-600 px-3 py-1.5 rounded-full">
+              <Text className="text-white text-xs font-semibold">{categoryName}</Text>
+            </View>
+          ))
         )}
       </View>
 

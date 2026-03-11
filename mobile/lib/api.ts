@@ -1,10 +1,10 @@
 import axios from "axios";
 import { getToken } from "./storage";
 
-// Android emulator: 10.0.2.2 (maps to host machine localhost)
-// iOS simulator: localhost works
-// Physical device: use your computer's actual IP address
-const API_BASE_URL = "https://api.react-laravel-blogapp.canprojects2.com.tr/api";
+// Use .env EXPO_PUBLIC_API_URL (e.g. https://your-api.com/api)
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ??
+  "https://api.react-laravel-blogapp.canprojects2.com.tr/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

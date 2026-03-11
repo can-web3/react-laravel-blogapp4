@@ -10,13 +10,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { BlogCard, BlogCardSkeleton } from "@/components/BlogCard";
-import { fetchBlogs, fetchPopularAuthors } from "@/lib/blogs";
-import type { BlogItem, PopularAuthor } from "@/lib/types";
+import { fetchBlogs, fetchTagBySlug } from "@/lib/blogs";
+import type { BlogItem } from "@/lib/types";
 
-export default function AuthorDetailScreen() {
+export default function TagDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
-  const [author, setAuthor] = useState<PopularAuthor | null>(null);
+  const [tagName, setTagName] = useState<string | null>(null);
   const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,19 +28,16 @@ export default function AuthorDetailScreen() {
       setError(null);
       setLoading(true);
 
-      const [authorsRes, blogsRes] = await Promise.all([
-        fetchPopularAuthors(50),
-        fetchBlogs({ perPage: 12, authorSlug: String(slug) }),
+      const [tagRes, blogsRes] = await Promise.all([
+        fetchTagBySlug(String(slug)),
+        fetchBlogs({ perPage: 20, tagSlug: String(slug) }),
       ]);
 
-      const foundAuthor =
-        authorsRes.data.find((a) => a.slug === slug) ?? null;
-
-      setAuthor(foundAuthor);
+      setTagName(tagRes.data?.name ?? String(slug));
       setBlogs(blogsRes.data ?? []);
     } catch (err) {
-      console.error("Failed to load author detail", err);
-      setError("Failed to load author. Please try again.");
+      console.error("Failed to load tag detail", err);
+      setError("Failed to load tag. Please try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,11 +53,10 @@ export default function AuthorDetailScreen() {
     loadData();
   }, [loadData]);
 
-  const displayName = author?.name ?? String(slug);
+  const displayName = tagName ?? `#${slug}`;
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50" edges={["top", "bottom"]}>
-      {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-slate-200 bg-white">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -73,15 +69,14 @@ export default function AuthorDetailScreen() {
             className="text-base font-semibold text-slate-900"
             numberOfLines={1}
           >
-            {displayName}
+            #{displayName}
           </Text>
           <Text className="text-xs text-slate-500" numberOfLines={1}>
-            Author profile
+            Tag
           </Text>
         </View>
       </View>
 
-      {/* Content */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
@@ -94,61 +89,20 @@ export default function AuthorDetailScreen() {
           />
         }
       >
-        {/* Author summary */}
-        <View className="mb-6 flex-row items-center">
-          <View className="w-12 h-12 rounded-full bg-primary-100 items-center justify-center mr-3">
-            <Text className="text-primary-700 font-semibold text-lg">
-              {displayName.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-          <View className="flex-1">
-            <Text
-              className="text-base font-semibold text-slate-900"
-              numberOfLines={1}
-            >
-              {displayName}
-            </Text>
-            {author?.bio && (
-              <Text
-                className="text-xs text-slate-500 mt-0.5"
-                numberOfLines={2}
-              >
-                {author.bio}
-              </Text>
-            )}
-            {author && (
-              <Text className="text-[11px] text-slate-400 mt-1">
-                {author.posts} {author.posts === 1 ? "post" : "posts"}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        {/* Loading */}
         {loading && !error && (
-          <View>
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-sm font-semibold text-slate-900">
-                Articles
-              </Text>
-            </View>
-            <View className="flex-row flex-wrap justify-between gap-y-4">
-              {[1, 2, 3, 4].map((i) => (
-                <View key={i} className="w-[48%]">
-                  <BlogCardSkeleton />
-                </View>
-              ))}
-            </View>
+          <View className="flex-row flex-wrap justify-between gap-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <View key={i} className="w-[48%]">
+                <BlogCardSkeleton />
+              </View>
+            ))}
           </View>
         )}
 
-        {/* Error */}
         {!loading && error && (
           <View className="items-center justify-center py-12">
             <Ionicons name="cloud-offline-outline" size={48} color="#94a3b8" />
-            <Text className="text-slate-500 text-center mt-4 mb-4">
-              {error}
-            </Text>
+            <Text className="text-slate-500 text-center mt-4 mb-4">{error}</Text>
             <TouchableOpacity
               onPress={loadData}
               className="bg-primary-600 px-6 py-3 rounded-xl"
@@ -158,17 +112,16 @@ export default function AuthorDetailScreen() {
           </View>
         )}
 
-        {/* Blogs list */}
         {!loading && !error && (
           <View>
-            <View className="flex-row items-center justify-between mb-3">
+            <View className="mb-3">
               <Text className="text-sm font-semibold text-slate-900">
                 Articles
               </Text>
             </View>
             {blogs.length === 0 ? (
               <Text className="text-xs text-slate-500">
-                No articles from this author yet.
+                No articles with this tag yet.
               </Text>
             ) : (
               <View className="flex-row flex-wrap justify-between gap-y-4">
@@ -189,4 +142,3 @@ export default function AuthorDetailScreen() {
     </SafeAreaView>
   );
 }
-

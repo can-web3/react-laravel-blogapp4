@@ -45,7 +45,7 @@ export default function BlogDetailScreen() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [visibleComments, setVisibleComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
 
@@ -73,9 +73,10 @@ export default function BlogDetailScreen() {
     
     setCommentsLoading(true);
     try {
-      const response = await fetchBlogComments(blog.id);
-      setComments(response.data);
-      setVisibleComments(response.data.slice(0, COMMENTS_PER_PAGE));
+      const response = await fetchBlogComments(blog.slug);
+      const list = response.data ?? [];
+      setComments(list);
+      setVisibleComments(list.slice(0, COMMENTS_PER_PAGE));
     } catch (err) {
       console.error("Error loading comments:", err);
     } finally {
@@ -87,17 +88,19 @@ export default function BlogDetailScreen() {
     loadBlog();
   }, [loadBlog]);
 
+  // Load comments when blog is ready (and clear when blog changes)
   useEffect(() => {
-    if (showComments && blog && comments.length === 0) {
+    if (blog) {
+      setComments([]);
+      setVisibleComments([]);
       loadComments();
     }
-  }, [showComments, blog, comments.length, loadComments]);
+  }, [blog?.id, loadComments]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setComments([]);
     setVisibleComments([]);
-    setShowComments(false);
     loadBlog();
   }, [loadBlog]);
 
@@ -120,7 +123,7 @@ export default function BlogDetailScreen() {
 
     setSubmittingComment(true);
     try {
-      const response = await addComment(blog.id, commentText.trim());
+      const response = await addComment(blog.slug, commentText.trim());
       setComments([response.data, ...comments]);
       setVisibleComments([response.data, ...visibleComments]);
       setCommentText("");
@@ -361,7 +364,7 @@ export default function BlogDetailScreen() {
             </Text>
 
             {/* Author & Date */}
-            <View className="flex-row items-center mb-6 pb-6 border-b border-slate-100">
+            <View className="flex-row items-center mb-4">
               <View className="w-12 h-12 bg-primary-100 rounded-full items-center justify-center">
                 <Text className="text-primary-700 font-bold text-lg">
                   {authorName.charAt(0).toUpperCase()}
@@ -373,9 +376,45 @@ export default function BlogDetailScreen() {
                   {formatDate(blog.published_at)}
                 </Text>
               </View>
-              <View className="flex-row items-center">
-                <Ionicons name="eye-outline" size={16} color="#94a3b8" />
-                <Text className="text-slate-500 text-sm ml-1">{blog.view_count}</Text>
+            </View>
+
+            {/* Count stats: views, likes, comments, bookmarks */}
+            <View className="flex-row items-center gap-6 py-4 mb-6 border-y border-slate-100">
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons name="eye-outline" size={18} color="#64748b" />
+                <Text className="text-slate-600 text-sm font-medium">
+                  {blog.view_count ?? 0}
+                </Text>
+                <Text className="text-slate-400 text-xs">views</Text>
+              </View>
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons
+                  name={blog.user_has_liked ? "heart" : "heart-outline"}
+                  size={18}
+                  color={blog.user_has_liked ? "#ef4444" : "#64748b"}
+                />
+                <Text className="text-slate-600 text-sm font-medium">
+                  {blog.like_count ?? 0}
+                </Text>
+                <Text className="text-slate-400 text-xs">likes</Text>
+              </View>
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons name="chatbubble-outline" size={18} color="#64748b" />
+                <Text className="text-slate-600 text-sm font-medium">
+                  {blog.comment_count ?? 0}
+                </Text>
+                <Text className="text-slate-400 text-xs">comments</Text>
+              </View>
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons
+                  name={blog.user_has_bookmarked ? "bookmark" : "bookmark-outline"}
+                  size={18}
+                  color={blog.user_has_bookmarked ? "#059669" : "#64748b"}
+                />
+                <Text className="text-slate-600 text-sm font-medium">
+                  {blog.bookmark_count ?? 0}
+                </Text>
+                <Text className="text-slate-400 text-xs">saves</Text>
               </View>
             </View>
 

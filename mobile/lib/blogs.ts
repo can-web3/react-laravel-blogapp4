@@ -18,6 +18,8 @@ interface FetchBlogsParams {
   tagSlug?: string;
   categorySlug?: string;
   authorSlug?: string;
+  bookmarked?: boolean;
+  liked?: boolean;
 }
 
 export async function fetchBlogs(params: FetchBlogsParams = {}): Promise<BlogListResponse> {
@@ -29,6 +31,8 @@ export async function fetchBlogs(params: FetchBlogsParams = {}): Promise<BlogLis
     tagSlug,
     categorySlug,
     authorSlug,
+    bookmarked,
+    liked,
   } = params;
 
   const queryParams = new URLSearchParams({
@@ -41,8 +45,11 @@ export async function fetchBlogs(params: FetchBlogsParams = {}): Promise<BlogLis
   if (tagSlug) queryParams.append("tag_slug", tagSlug);
   if (categorySlug) queryParams.append("category_slug", categorySlug);
   if (authorSlug) queryParams.append("author_slug", authorSlug);
+  if (bookmarked) queryParams.append("bookmarked", "1");
+  if (liked) queryParams.append("liked", "1");
 
-  const response = await apiGuest.get<BlogListResponse>(`/blogs?${queryParams}`);
+  const client = bookmarked || liked ? api : apiGuest;
+  const response = await client.get<BlogListResponse>(`/blogs?${queryParams}`);
   return response.data;
 }
 
@@ -68,6 +75,11 @@ export async function fetchPopularTags(limit = 9): Promise<{ success: boolean; d
   return response.data;
 }
 
+export async function fetchTagBySlug(slug: string): Promise<{ success: boolean; data: { id: number; name: string; slug: string } }> {
+  const response = await apiGuest.get(`/tags/${slug}`);
+  return response.data;
+}
+
 export async function fetchBlogBySlug(slug: string): Promise<BlogDetailResponse> {
   const token = await getToken();
   const client = token ? api : apiGuest;
@@ -75,8 +87,8 @@ export async function fetchBlogBySlug(slug: string): Promise<BlogDetailResponse>
   return response.data;
 }
 
-export async function fetchBlogComments(blogId: number): Promise<{ success: boolean; data: Comment[] }> {
-  const response = await apiGuest.get(`/blogs/${blogId}/comments`);
+export async function fetchBlogComments(blogSlugOrId: string | number): Promise<{ success: boolean; data: Comment[] }> {
+  const response = await apiGuest.get(`/blogs/${encodeURIComponent(String(blogSlugOrId))}/comments`);
   return response.data;
 }
 
@@ -97,13 +109,13 @@ export async function unbookmarkBlog(blogId: number): Promise<void> {
 }
 
 export async function addComment(
-  blogId: number,
+  blogSlugOrId: string | number,
   body: string,
   parentId?: number
 ): Promise<{ success: boolean; data: Comment }> {
-  const response = await api.post(`/blogs/${blogId}/comments`, {
-    body,
-    parent_id: parentId,
-  });
+  const response = await api.post(
+    `/blogs/${encodeURIComponent(String(blogSlugOrId))}/comments`,
+    { body, parent_id: parentId }
+  );
   return response.data;
 }

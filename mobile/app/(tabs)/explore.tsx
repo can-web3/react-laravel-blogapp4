@@ -9,13 +9,17 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchPopularTags, fetchPopularAuthors } from "@/lib/blogs";
+import { fetchCategories } from "@/lib/categories";
 import type { PopularTag, PopularAuthor } from "@/lib/types";
+import type { CategoryItem } from "@/lib/categories";
 
 export default function ExploreScreen() {
   const [tags, setTags] = useState<PopularTag[]>([]);
   const [authors, setAuthors] = useState<PopularAuthor[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,12 +29,14 @@ export default function ExploreScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      const [tagsRes, authorsRes] = await Promise.all([
+      const [tagsRes, authorsRes, categoriesRes] = await Promise.all([
         fetchPopularTags(20),
         fetchPopularAuthors(40),
+        fetchCategories(),
       ]);
-      setTags(tagsRes.data);
-      setAuthors(authorsRes.data);
+      setTags(tagsRes.data ?? []);
+      setAuthors(authorsRes.data ?? []);
+      setCategories(categoriesRes.data ?? []);
     } catch (err) {
       console.error("Error loading explore data:", err);
     } finally {
@@ -54,6 +60,16 @@ export default function ExploreScreen() {
     const q = searchQuery.trim().toLowerCase();
     return tags.filter((tag) => tag.name.toLowerCase().includes(q));
   }, [tags, searchQuery]);
+
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return categories;
+    const q = searchQuery.trim().toLowerCase();
+    return categories.filter(
+      (cat) =>
+        cat.name.toLowerCase().includes(q) ||
+        (cat.description ?? "").toLowerCase().includes(q)
+    );
+  }, [categories, searchQuery]);
 
   const filteredAuthors = useMemo(() => {
     if (!searchQuery.trim()) return authors;
@@ -118,6 +134,29 @@ export default function ExploreScreen() {
           </View>
         ) : (
           <>
+            {/* Categories */}
+            <View className="mb-8">
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-lg font-bold text-slate-900">
+                  Categories
+                </Text>
+              </View>
+              <View className="flex-row flex-wrap gap-2">
+                {filteredCategories.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    className="bg-white border border-slate-200 px-4 py-2 rounded-full"
+                    onPress={() => router.push(`/category/${cat.slug}`)}
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-slate-700 font-medium">
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             {/* Popular Tags */}
             <View className="mb-8">
               <View className="flex-row items-center justify-between mb-4">
@@ -135,6 +174,8 @@ export default function ExploreScreen() {
                   <TouchableOpacity
                     key={tag.id}
                     className="bg-white border border-slate-200 px-4 py-2 rounded-full"
+                    onPress={() => router.push(`/tag/${tag.slug}`)}
+                    activeOpacity={0.7}
                   >
                     <Text className="text-slate-700 font-medium">
                       #{tag.name}
@@ -156,6 +197,8 @@ export default function ExploreScreen() {
                   <TouchableOpacity
                     key={author.id}
                     className="bg-white rounded-xl p-4 flex-row items-center border border-slate-100"
+                    onPress={() => router.push(`/author/${author.slug}`)}
+                    activeOpacity={0.7}
                   >
                     <View className="w-12 h-12 bg-primary-100 rounded-full items-center justify-center">
                       <Text className="text-primary-600 font-bold text-lg">

@@ -62,6 +62,16 @@ class BlogController extends Controller
             $query->whereHas('user', fn ($q) => $q->where('slug', $request->string('author_slug')));
         }
 
+        if ($request->user() && $request->boolean('bookmarked')) {
+            $query->where('status', 'published')
+                ->whereHas('bookmarkers', fn ($q) => $q->where('users.id', $request->user()->id));
+        }
+
+        if ($request->user() && $request->boolean('liked')) {
+            $query->where('status', 'published')
+                ->whereHas('likers', fn ($q) => $q->where('users.id', $request->user()->id));
+        }
+
         if ($request->filled('search')) {
             $term = (string) $request->input('search');
             $query->where('title', 'like', '%'.addcslashes($term, '%_\\').'%');

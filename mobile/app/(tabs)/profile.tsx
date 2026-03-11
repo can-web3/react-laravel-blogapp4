@@ -111,17 +111,17 @@ export default function ProfileScreen() {
             <MenuItem
               icon="bookmark-outline"
               title="Saved Posts"
-              onPress={() => {}}
+              onPress={() => router.push({ pathname: "/profile/blogs", params: { list: "saved" } })}
             />
             <MenuItem
               icon="heart-outline"
               title="Liked Posts"
-              onPress={() => {}}
+              onPress={() => router.push({ pathname: "/profile/blogs", params: { list: "liked" } })}
             />
             <MenuItem
               icon="create-outline"
               title="My Posts"
-              onPress={() => {}}
+              onPress={() => router.push({ pathname: "/profile/blogs", params: { list: "my" } })}
             />
             <View className="h-px bg-slate-200 my-3" />
             <MenuItem
